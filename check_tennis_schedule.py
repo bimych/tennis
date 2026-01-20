@@ -33,17 +33,6 @@ def _extract_weekday_and_start(time_text: str) -> tuple[str, int] | None:
     hour = _parse_hour(start_time)
     return weekday, hour
 
-def _is_available(card) -> bool:
-    """
-    Check if the class card is available for booking.
-    Looks for a 'Book now' button inside 'controls'.
-    """
-    controls_tag = card.find(class_="controls")
-    if not controls_tag:
-        return False
-    button = controls_tag.select_one("form button.primary")
-    return button is not None and "Book now" in button.get_text(strip=True)
-
 def _get_booking_url(card) -> str | None:
     """Return the full URL of the booking page if 'Book now' exists."""
     button = card.select_one("div.controls form button.primary")
@@ -99,7 +88,6 @@ def find_beginner_not_sold_classes(min_spaces: int = 2) -> list[str]:
             continue
         weekday, hour = weekday_hour
     
-        # ✅ First, check if class matches our filters
         if not _is_class_eligible(title, weekday, hour):
             continue  # Skip classes that are not after 6PM or Sunday, or not beginner
     
