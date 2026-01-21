@@ -1,8 +1,8 @@
- name: Checking begginer class tennis lessons
+name: Checking begginer class tennis lessons
 
- on:
-   schedule:
-     - cron: "*/10 * * * *"
+on:
+  schedule:
+    - cron: "*/10 * * * *"
 
 jobs:
   check_beginner_class_availability:
