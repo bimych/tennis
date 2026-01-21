@@ -1,0 +1,25 @@
+ name: Checking begginer class tennis lessons
+
+ on:
+   schedule:
+     - cron: "*/10 * * * *"
+
+jobs:
+  check_beginner_class_availability:
+    name: Check if there are available tennis classes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      
+      - name: Setting up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Running script
+        run: python check_tennis_schedule.py
