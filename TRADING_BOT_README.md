@@ -59,16 +59,29 @@ USE_TESTNET=True
 
 ## Usage
 
-### Backtesting
+### Demo Backtesting (Offline)
 
-Run backtesting on historical data (no API credentials needed for historical data):
+Run backtesting with simulated data (no internet or API credentials required):
+
+```bash
+python run_demo_backtest.py
+```
+
+This is perfect for:
+- Testing the bot logic without internet access
+- Quick verification that everything is working
+- Understanding how the strategy behaves
+
+### Backtesting (Online)
+
+Run backtesting on real historical data from Binance (requires internet, no API credentials needed):
 
 ```bash
 python run_backtest.py
 ```
 
 This will:
-- Fetch 90 days of historical BTC/USDT 1-hour candles
+- Fetch 90 days of historical BTC/USDT 1-hour candles from Binance
 - Simulate trading with the strategy
 - Display performance metrics including:
   - Win rate
@@ -98,6 +111,22 @@ python run_live.py --live --balance 1000
 ```
 
 The bot will ask for confirmation before starting live trading.
+
+### Testing
+
+Run the test suite to verify all components are working correctly:
+
+```bash
+python test_trading_bot.py
+```
+
+This will test:
+- EMA indicator calculations
+- Uptrend detection logic
+- Price proximity checks
+- Position management (entry, exit, trailing stop)
+- Risk management functionality
+- Demo data generation
 
 ## Configuration
 
