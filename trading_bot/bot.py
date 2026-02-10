@@ -10,7 +10,7 @@ from .strategy import TradingStrategy
 from .risk_manager import RiskManager
 from .config import (
     SYMBOL, TIMEFRAME, INITIAL_BALANCE, EMA_SHORT, EMA_LONG, 
-    RISK_PER_TRADE, LOOKBACK_DAYS
+    RISK_PER_TRADE, LOOKBACK_DAYS, MAX_POSITIONS
 )
 
 
