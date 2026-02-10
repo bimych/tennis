@@ -284,7 +284,7 @@ def main():
     
     # Step 4: Print and plot results
     backtester.print_results()
-    backtester.plot_results(save_path='/tmp/backtest_results.png')
+    backtester.plot_results(save_path='backtest_results.png')
 
 
 if __name__ == "__main__":

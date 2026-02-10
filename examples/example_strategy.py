@@ -197,8 +197,9 @@ def main():
     ax2.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig('/tmp/strategy_example.png', dpi=100)
-    print("\nChart saved to /tmp/strategy_example.png")
+    save_path = 'strategy_example.png'
+    plt.savefig(save_path, dpi=100)
+    print(f"\nChart saved to {save_path}")
     plt.show()
 
 

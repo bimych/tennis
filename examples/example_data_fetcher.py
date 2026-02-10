@@ -19,8 +19,6 @@ class DataFetcher:
         print(data.head())
     """
     
-
-    
     def fetch_historical_data(
         self, 
         symbol: str, 

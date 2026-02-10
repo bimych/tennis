@@ -143,7 +143,7 @@ Strategy Statistics:
   Long Periods: 124
   Flat Periods: 76
 
-Chart saved to /tmp/strategy_example.png
+Chart saved to strategy_example.png
 ```
 
 ### Backtester Output:
@@ -183,7 +183,7 @@ After running these examples:
 **Solution**: Check your internet connection and try a different symbol
 
 ### Issue: Plots don't show
-**Solution**: The plots are saved to `/tmp/`. Check there if they don't display.
+**Solution**: The plots are saved in the current directory (strategy_example.png, backtest_results.png). Check there if they don't display automatically.
 
 ## Using with Copilot
 
