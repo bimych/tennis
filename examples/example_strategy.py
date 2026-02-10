@@ -126,10 +126,18 @@ class SimpleMACrossStrategy:
 
 def main():
     """Example usage of SimpleMACrossStrategy."""
-    import sys
-    sys.path.append('..')
+    # Note: This example assumes you've installed the required packages:
+    # pip install pandas matplotlib yfinance
     
-    from example_data_fetcher import DataFetcher
+    # For a real project, use proper package structure with relative imports
+    # This example uses direct import from the same directory
+    try:
+        from example_data_fetcher import DataFetcher
+    except ImportError:
+        print("Error: Make sure example_data_fetcher.py is in the same directory")
+        print("Run this script from the examples/ directory")
+        return
+    
     import matplotlib.pyplot as plt
     
     print("=== Simple MA Crossover Strategy Example ===\n")

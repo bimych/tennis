@@ -19,9 +19,7 @@ class DataFetcher:
         print(data.head())
     """
     
-    def __init__(self):
-        """Initialize the data fetcher."""
-        pass
+
     
     def fetch_historical_data(
         self, 

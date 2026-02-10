@@ -243,11 +243,18 @@ class SimpleBacktester:
 
 def main():
     """Example usage of SimpleBacktester."""
-    import sys
-    sys.path.append('..')
+    # Note: This example assumes you've installed the required packages:
+    # pip install pandas matplotlib yfinance
     
-    from example_data_fetcher import DataFetcher
-    from example_strategy import SimpleMACrossStrategy
+    # For a real project, use proper package structure with relative imports
+    # This example uses direct import from the same directory
+    try:
+        from example_data_fetcher import DataFetcher
+        from example_strategy import SimpleMACrossStrategy
+    except ImportError:
+        print("Error: Make sure all example files are in the same directory")
+        print("Run this script from the examples/ directory")
+        return
     
     print("=== Simple Backtester Example ===\n")
     
