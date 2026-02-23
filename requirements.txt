@@ -15,8 +15,3 @@ soupsieve==2.8.3
 typing_extensions==4.15.0
 urllib3==2.6.3
 Werkzeug==3.1.5
-
-# Trading bot dependencies
-python-binance==1.0.19
-pandas==2.2.0
-numpy==1.26.4
