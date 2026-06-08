@@ -1,8 +1,8 @@
 name: Checking begginer class tennis lessons
 
 env:
-  SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
-
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+  EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
 on:
   schedule:
     - cron: "*/10 * * * *"
