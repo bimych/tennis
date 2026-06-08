@@ -1,38 +1,9 @@
-import os
-import ssl
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import re
 from urllib.parse import urljoin
-from dotenv import load_dotenv
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-# ===============================
-# Load environment variables from .env
-# ===============================
-load_dotenv()
-# ===============================
-# SSL fix for macOS venv testing
-# ===============================
-ssl._create_default_https_context = ssl._create_unverified_context
-
-# ===============================
-# Config
-# ===============================
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-FROM_EMAIL = os.environ["EMAIL_ADDRESS"]
-EMAIL_PASSWORD = os.environ["EMAIL_PASSWORD"]
-TO_EMAIL = "bogdan.khimych@gmail.com"
-
-if not FROM_EMAIL or not EMAIL_PASSWORD:
-    raise RuntimeError("EMAIL_ADDRESS and EMAIL_PASSWORD environment variables not set")
-
-HEADERS = {'User-Agent': 'Mozilla/5.0'}
-BASE_URL = "https://tennistowerhamlets.com"
+from common import HEADERS, BASE_URL, send_email, extract_day_name
 COURTS_URL = "https://tennistowerhamlets.com/book/courts/poplar-rec-ground"
 
 # Interested days and times
@@ -91,29 +62,6 @@ def _get_day_links() -> list[tuple[str, str]]:
             day_links.append((day_text, full_url))
     
     return day_links
-
-def _extract_day_name(day_text: str) -> str | None:
-    """
-    Extract day name from text like 'Tue 12 Jun' or 'Tuesday, June 12'
-    Returns abbreviated day name like 'Tue' or None
-    """
-    days_abbr = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
-    
-    # Try abbreviated first
-    for day in days_abbr:
-        if day in day_text:
-            return day
-    
-    # Try full names and convert to abbreviated
-    day_map = {
-        "Monday": "Mon", "Tuesday": "Tue", "Wednesday": "Wed",
-        "Thursday": "Thu", "Friday": "Fri", "Saturday": "Sat", "Sunday": "Sun"
-    }
-    for full, abbr in day_map.items():
-        if full in day_text:
-            return abbr
-    
-    return None
 
 def _check_court_availability(day_url: str, day_name: str) -> list[dict]:
     """
@@ -195,7 +143,7 @@ def find_available_courts() -> list[dict]:
     all_available = []
     
     for day_text, day_url in day_links:
-        day_name = _extract_day_name(day_text)
+        day_name = extract_day_name(day_text)
         
         # Check if this is a day we're interested in
         if not day_name or day_name not in INTERESTED_DAYS:
@@ -206,25 +154,6 @@ def find_available_courts() -> list[dict]:
         all_available.extend(available)
     
     return all_available
-
-# ===============================
-# Email sender via SMTP
-# ===============================
-def send_email(subject, body):
-    try:
-        msg = MIMEMultipart()
-        msg["From"] = FROM_EMAIL
-        msg["To"] = TO_EMAIL
-        msg["Subject"] = subject
-        msg.attach(MIMEText(body, "html"))
-        
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(FROM_EMAIL, EMAIL_PASSWORD)
-            server.send_message(msg)
-        print("Email sent successfully!")
-    except Exception as e:
-        print("SMTP error:", e)
 
 # ===============================
 # Main

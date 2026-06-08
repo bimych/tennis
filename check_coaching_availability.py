@@ -1,37 +1,10 @@
-import os
 import ssl
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import re
 from urllib.parse import urljoin
-from dotenv import load_dotenv
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-# ===============================
-# Load environment variables from .env
-# ===============================
-load_dotenv()
-# ===============================
-# SSL fix for macOS venv testing
-# ===============================
-ssl._create_default_https_context = ssl._create_unverified_context
-
-# ===============================
-# Config
-# ===============================
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-FROM_EMAIL = os.environ["EMAIL_ADDRESS"]
-EMAIL_PASSWORD = os.environ["EMAIL_PASSWORD"]
-TO_EMAIL = "bogdan.khimych@gmail.com"
-
-if not FROM_EMAIL or not EMAIL_PASSWORD:
-    raise RuntimeError("EMAIL_ADDRESS and EMAIL_PASSWORD environment variables not set")
-HEADERS = {'User-Agent': 'Mozilla/5.0'}
-BASE_URL = "https://tennistowerhamlets.com"
+from common import HEADERS, BASE_URL, send_email, extract_day_name
 URL = "https://tennistowerhamlets.com/coaching?filter_venue=&filter_age_groups%5B%5D=5&filter_from=2026-01-04&filter_to="
 
 # ===============================
@@ -108,25 +81,6 @@ def find_beginner_not_sold_classes(min_spaces: int = 2) -> list[str]:
             continue
         results.append(f"{title} — {weekday} @ {hour}:00 — {booking_url}")
     return results
-
-# ===============================
-# Email sender via SMTP
-# ===============================
-def send_email(subject, body):
-    try:
-        msg = MIMEMultipart()
-        msg["From"] = FROM_EMAIL
-        msg["To"] = TO_EMAIL
-        msg["Subject"] = subject
-        msg.attach(MIMEText(body, "html"))
-        
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(FROM_EMAIL, EMAIL_PASSWORD)
-            server.send_message(msg)
-        print("Email sent successfully!")
-    except Exception as e:
-        print("SMTP error:", e)
 
 # ===============================
 # Main
