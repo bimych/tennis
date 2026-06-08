@@ -1,4 +1,4 @@
-name: Checking begginer class tennis lessons
+name: Check tennis availability
 
 env:
   EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_beginner_class_availability:
-    name: Check if there are available beginner tennis classes
+  check_tennis_availability:
+    name: Check tennis class and court availability
     runs-on: ubuntu-latest
 
     steps:
@@ -25,5 +25,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Running script
-        run: python check_tennis_schedule.py
+      - name: Check coaching availability
+        run: python check_coaching_availability.py
+
+      - name: Check court availability
+        run: python check_court_availability.py
