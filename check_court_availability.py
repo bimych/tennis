@@ -1,9 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
 import re
 from urllib.parse import urljoin
 from common import HEADERS, BASE_URL, send_email, extract_day_name
+from state_tracker import has_changes, save_state, get_changes_summary
 COURTS_URL = "https://tennistowerhamlets.com/book/courts/poplar-rec-ground"
 
 # Interested days and times
@@ -13,13 +13,6 @@ INTERESTED_TIMES = {7, 11, 19, 20, 21}  # 7pm, 8pm, 9pm (24-hour format)
 # ===============================
 # Scraper helpers
 # ===============================
-def _parse_hour(time_str: str) -> int | None:
-    """Parse time string like '7:00pm' to hour (19 for 7pm)"""
-    try:
-        return datetime.strptime(time_str.strip(), "%I:%M%p").hour
-    except ValueError:
-        return None
-
 def _get_day_links() -> list[tuple[str, str]]:
     """
     Fetch the main courts page and extract day links from the day picker.
@@ -161,17 +154,53 @@ def find_available_courts() -> list[dict]:
 if __name__ == "__main__":
     available_courts = find_available_courts()
     
-    if not available_courts:
-        print("No available courts at interested times")
+    # Convert to strings for state comparison
+    court_slots = [item["slot"] for item in available_courts]
+    
+    # Check if there are changes compared to previous state
+    if has_changes("courts", court_slots):
+        changes = get_changes_summary("courts", court_slots)
+        print(f"Changes detected! Total: {changes['total']}")
+        print(f"  New: {len(changes['new'])}")
+        print(f"  Removed: {len(changes['removed'])}")
+        
+        # Create lookup for URLs
+        slot_to_url = {item["slot"]: item["url"] for item in available_courts}
+        
+        if available_courts:
+            print("Available courts found:")
+            for item in available_courts:
+                print("-", item["slot"])
+            
+            # Build email body with change summary
+            body = "<h2>Tennis Courts at Poplar Rec Ground - Status Update</h2>"
+            
+            if changes['new']:
+                body += "<h3>🆕 New Courts Available</h3><ul>"
+                for slot in changes['new']:
+                    url = slot_to_url.get(slot, "")
+                    if url:
+                        body += f"<li><a href='{url}'>{slot}</a></li>"
+                    else:
+                        body += f"<li>{slot}</li>"
+                body += "</ul>"
+            
+            if changes['unchanged']:
+                body += f"<h3>Still Available</h3><ul>"
+                for slot in changes['unchanged']:
+                    url = slot_to_url.get(slot, "")
+                    if url:
+                        body += f"<li><a href='{url}'>{slot}</a></li>"
+                    else:
+                        body += f"<li>{slot}</li>"
+                body += "</ul>"
+            
+            send_email("Tennis Courts - Availability Update!", body)
+        else:
+            send_email("Tennis Courts - All Booked Out!", 
+                      "<p>All courts at your preferred times are now fully booked.</p>")
+        
+        # Save new state
+        save_state("courts", court_slots)
     else:
-        print("Available courts found:")
-        for item in available_courts:
-            print("-", item["slot"])
-        
-        body = "<h2>Available Courts at Poplar Rec Ground</h2>"
-        body += "<ul>"
-        for item in available_courts:
-            body += f"<li><a href='{item['url']}'>{item['slot']}</a></li>"
-        body += "</ul>"
-        
-        send_email("Tennis Courts Available!", body)
+        print("No changes in court availability")

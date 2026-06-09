@@ -1,10 +1,10 @@
-import ssl
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import re
 from urllib.parse import urljoin
 from common import HEADERS, BASE_URL, send_email, extract_day_name
+from state_tracker import has_changes, save_state, get_changes_summary
 URL = "https://tennistowerhamlets.com/coaching?filter_venue=&filter_age_groups%5B%5D=5&filter_from=2026-01-04&filter_to="
 
 # ===============================
@@ -87,11 +87,37 @@ def find_beginner_not_sold_classes(min_spaces: int = 2) -> list[str]:
 # ===============================
 if __name__ == "__main__":
     classes = find_beginner_not_sold_classes()
-    if not classes:
-        print("No available beginner classes")
+    
+    # Check if there are changes compared to previous state
+    if has_changes("coaching", classes):
+        changes = get_changes_summary("coaching", classes)
+        print(f"Changes detected! Total: {changes['total']}")
+        print(f"  New: {len(changes['new'])}")
+        print(f"  Removed: {len(changes['removed'])}")
+        
+        if classes:
+            print("Available beginner classes:")
+            for c in classes:
+                print("-", c)
+            
+            # Build email body with change summary
+            body = "<h2>Beginner Tennis Classes - Status Update</h2>"
+            
+            if changes['new']:
+                body += "<h3>🆕 New Classes Available</h3><ul>"
+                for item in changes['new']:
+                    body += f"<li>{item}</li>"
+                body += "</ul>"
+            
+            if changes['unchanged']:
+                body += f"<h3>Still Available</h3><p>{len(changes['unchanged'])} sessions still available</p>"
+            
+            send_email("Beginner Tennis Classes - Availability Update!", body)
+        else:
+            send_email("Beginner Tennis Classes - All Booked Out!", 
+                      "<p>All beginner classes are now fully booked.</p>")
+        
+        # Save new state
+        save_state("coaching", classes)
     else:
-        print("Available beginner classes:")
-        for c in classes:
-            print("-", c)
-        body = "<br>".join(classes)
-        send_email("Beginner Tennis Classes Available!", body)
+        print("No changes in coaching availability")
