@@ -8,7 +8,7 @@ COURTS_URL = "https://tennistowerhamlets.com/book/courts/poplar-rec-ground"
 
 # Interested days and times
 INTERESTED_DAYS = {"Mon", "Tue", "Thu", "Fri", "Sat", "Sun"}
-INTERESTED_TIMES = {7, 11, 19, 20, 21}  # 7pm, 8pm, 9pm (24-hour format)
+INTERESTED_TIMES = {19, 20, 21}  # 7pm, 8pm, 9pm (24-hour format)
 
 # ===============================
 # Scraper helpers
