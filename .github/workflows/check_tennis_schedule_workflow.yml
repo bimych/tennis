@@ -12,6 +12,8 @@ jobs:
   check_tennis_availability:
     name: Check tennis class and court availability
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -39,6 +41,10 @@ jobs:
 
       - name: Commit state changes
         run: |
-          git add -A
-          git diff --cached --exit-code || git commit -m "Update availability state [skip ci]"
-          git push || true
+          git add state/
+          if ! git diff --cached --quiet; then
+            git commit -m "Update availability state [skip ci]"
+            git push
+          else
+            echo "No state changes to commit"
+          fi
