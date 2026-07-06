@@ -4,21 +4,26 @@ import re
 from urllib.parse import urljoin
 from common import HEADERS, BASE_URL, send_email, extract_day_name
 from state_tracker import has_changes, save_state, get_changes_summary
-COURTS_URL = "https://tennistowerhamlets.com/book/courts/poplar-rec-ground"
+
+# Grounds to check
+GROUNDS = {
+    "poplar": "https://tennistowerhamlets.com/book/courts/poplar-rec-ground",
+    "st-johns": "https://tennistowerhamlets.com/book/courts/st-johns-park"
+}
 
 # Interested days and times
 INTERESTED_DAYS = {"Mon", "Tue", "Thu", "Fri", "Sat", "Sun"}
-INTERESTED_TIMES = {19, 20, 21}  # 7pm, 8pm, 9pm (24-hour format)
+INTERESTED_TIMES = {19, 20}  # 7pm, 8pm, 9pm (24-hour format)
 
 # ===============================
 # Scraper helpers
 # ===============================
-def _get_day_links() -> list[tuple[str, str]]:
+def _get_day_links(courts_url: str) -> list[tuple[str, str]]:
     """
     Fetch the main courts page and extract day links from the day picker.
     Returns list of tuples (day_name, day_url)
     """
-    res = requests.get(COURTS_URL, headers=HEADERS, verify=False)
+    res = requests.get(courts_url, headers=HEADERS, verify=False)
     res.raise_for_status()
     soup = BeautifulSoup(res.text, "html.parser")
     
@@ -34,7 +39,8 @@ def _get_day_links() -> list[tuple[str, str]]:
         # If no specific container, look for links near the main heading or in the page
         # The links appear to be near the page title with format like "Today", "Tomorrow", "Wed", etc.
         # We'll extract all links that point to the same base URL with date parameters
-        pattern = re.compile(r"poplar-rec-ground/\d{4}-\d{2}-\d{2}")
+        ground_path = courts_url.replace("https://tennistowerhamlets.com/book/courts/", "")
+        pattern = re.compile(rf"{ground_path}/\d{{4}}-\d{{2}}-\d{{2}}")
         all_links = soup.find_all("a", href=pattern)
         
         for link in all_links:
@@ -123,28 +129,32 @@ def _check_court_availability(day_url: str, day_name: str) -> list[dict]:
 
 def find_available_courts() -> list[dict]:
     """
-    Find all available courts at interested times.
-    Returns list of dicts with 'slot', 'url' keys.
+    Find all available courts at interested times across all grounds.
+    Returns list of dicts with 'ground', 'slot', 'url' keys.
     """
-    print("Fetching day links from main courts page...")
-    day_links = _get_day_links()
-    
-    if not day_links:
-        print("No day links found")
-        return []
-    
     all_available = []
     
-    for day_text, day_url in day_links:
-        day_name = extract_day_name(day_text)
+    for ground_name, courts_url in GROUNDS.items():
+        print(f"\nChecking {ground_name.replace('-', ' ').title()}...")
+        print("Fetching day links from courts page...")
+        day_links = _get_day_links(courts_url)
         
-        # Check if this is a day we're interested in
-        if not day_name or day_name not in INTERESTED_DAYS:
+        if not day_links:
+            print(f"No day links found for {ground_name}")
             continue
         
-        print(f"Checking {day_name}...")
-        available = _check_court_availability(day_url, day_name)
-        all_available.extend(available)
+        for day_text, day_url in day_links:
+            day_name = extract_day_name(day_text)
+            
+            # Check if this is a day we're interested in
+            if not day_name or day_name not in INTERESTED_DAYS:
+                continue
+            
+            print(f"  Checking {day_name}...")
+            available = _check_court_availability(day_url, day_name)
+            for item in available:
+                item["ground"] = ground_name
+            all_available.extend(available)
     
     return all_available
 
@@ -154,26 +164,26 @@ def find_available_courts() -> list[dict]:
 if __name__ == "__main__":
     available_courts = find_available_courts()
     
-    # Convert to strings for state comparison
-    court_slots = [item["slot"] for item in available_courts]
+    # Convert to strings for state comparison (include ground)
+    court_slots = [f"{item['ground']}: {item['slot']}" for item in available_courts]
     
     # Check if there are changes compared to previous state
     if has_changes("courts", court_slots):
         changes = get_changes_summary("courts", court_slots)
-        print(f"Changes detected! Total: {changes['total']}")
+        print(f"\nChanges detected! Total: {changes['total']}")
         print(f"  New: {len(changes['new'])}")
         print(f"  Removed: {len(changes['removed'])}")
         
         # Create lookup for URLs
-        slot_to_url = {item["slot"]: item["url"] for item in available_courts}
+        slot_to_url = {f"{item['ground']}: {item['slot']}": item["url"] for item in available_courts}
         
         if available_courts:
-            print("Available courts found:")
+            print("\nAvailable courts found:")
             for item in available_courts:
-                print("-", item["slot"])
+                print(f"  - {item['ground'].replace('-', ' ').title()}: {item['slot']}")
             
             # Build email body with change summary
-            body = "<h2>Tennis Courts at Poplar Rec Ground - Status Update</h2>"
+            body = "<h2>Tennis Courts - Status Update</h2>"
             
             if changes['new']:
                 body += "<h3>🆕 New Courts Available</h3><ul>"
@@ -203,4 +213,4 @@ if __name__ == "__main__":
         # Save new state
         save_state("courts", court_slots)
     else:
-        print("No changes in court availability")
+        print("\nNo changes in court availability")
