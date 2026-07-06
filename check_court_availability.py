@@ -12,7 +12,7 @@ GROUNDS = {
 }
 
 # Interested days and times
-INTERESTED_DAYS = {"Mon", "Tue", "Thu", "Fri", "Sat", "Sun"}
+INTERESTED_DAYS = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
 INTERESTED_TIMES = {19, 20}  # 7pm, 8pm, 9pm (24-hour format)
 
 # ===============================
